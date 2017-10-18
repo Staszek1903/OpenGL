@@ -30,4 +30,10 @@ DISTFILES += \
     shaders/colour_fragment_shader.frag \
     shaders/colour_vertex_shader.vert \
     shaders/texture_fragment_shader.frag \
-    shaders/texture_vertex_shader.vert
+    shaders/texture_vertex_shader.vert \
+    objects/atom_cube.obj \
+    objects/gopnik_cube.obj \
+    objects/star_monkey.obj \
+    textures/atom.bmp \
+    textures/blyat.bmp \
+    textures/star.jpg
