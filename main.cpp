@@ -3,8 +3,8 @@
 
 using namespace std;
 
-int main(void)
-{
+int main()
+{    
     Program prog;
     prog.run();
     return 0;

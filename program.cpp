@@ -1,30 +1,65 @@
 #include "program.h"
 
-
 Program::Program()
-    :vertical_angle(0.0f), horizontal_angle(0.0f), graphic(1366.0f/768.0f, vertical_angle, horizontal_angle,
-                                                           camera_pos, camera_direction)
+    :gl_manager(camera)
 {
-    //opengl context init
-    sf::ContextSettings context;
-    context.depthBits = 24;
-    context.stencilBits = 8;
-    context.antialiasingLevel = 4;
-    context.majorVersion = 3;
-    context.minorVersion = 0;
+    std::cout<<"good ratio: "<<(1366.0f/768.0f)<<std::endl;
+    gl_manager.create_window(win);
+    gl_manager.init(1366.0f/768.0f);
 
-    win.create(sf::VideoMode(1366,768), "opngl", sf::Style::Close | sf::Style::Fullscreen,  context);
+    agl::Shader v_shader, f_shader;
+    v_shader.load("./shaders/texture_vertex_shader.vert", GL_VERTEX_SHADER);
+    f_shader.load("./shaders/texture_fragment_shader.frag", GL_FRAGMENT_SHADER);
 
+    shading_program.createProgram();
+    shading_program.attachShader(v_shader);
+    shading_program.attachShader(f_shader);
+    shading_program.link();
+    shading_program.detachShaders();
 
-    win.setVerticalSyncEnabled(true);
-    win.setFramerateLimit(100);
+    std::string uniform_names[static_cast<int> (agl::Uniforms::UIFORMS_COUT)] =
+    {
+        "MVP",
+        "M",
+        "M_rot",
+        "LightPos"
+        "CameraPos",
+        "myTextureSampler"
+    };
 
-    win.setActive(true);
+    for(int e = static_cast<int>(agl::Uniforms::MVP); e<static_cast<int>(agl::Uniforms::UIFORMS_COUT); ++e)
+            shading_program.setUniformEnum(uniform_names[e],e);
+
+    model.loadFromOBJ("./objects/star_monkey.obj");
+    texture.loadFromFile("./textures/star.jpg");
+
+    herubin_model.loadFromOBJ("./objects/Herubin.obj");
+    herubin_texture.loadFromFile("./textures/Herubin.png");
+
+    obj.setModel(model);
+    obj.setShader(shading_program);
+    obj.setTexture(texture);
+
+    glm::vec3 offset(2.0f,0.0f,4.0f);
+    obj.move(offset);
+    obj.rotate(0.0f,3.14f);
+    herubin.setScale(0.7);
+
+    herubin.setModel(herubin_model);
+    herubin.setTexture(herubin_texture);
+    herubin.setShader(shading_program);
+    herubin.move(glm::vec3(0.0f,0.0f, 8.0f));
+
+    obj.printBufferID();
+    herubin.printBufferID();
+
+    //std::string_view test;
 }
+
 
 void Program::run()
 {
-    while (win.isOpen())
+    while(win.isOpen())
     {
         input();
         update();
@@ -35,64 +70,76 @@ void Program::run()
 void Program::input()
 {
     static sf::Vector2f mouse_prev_pos(0,0);
-    static bool camera_movement(false);
+        static bool camera_movement(false);
+        static bool model_movement(false);
 
-    sf::Event ev;
-    while (win.pollEvent(ev))
-    {
-        if(ev.type == sf::Event::Closed)
-            win.close();
-        if(ev.type == sf::Event::KeyPressed && ev.key.code == sf::Keyboard::Escape)
-            win.close();
-        else if( ev.type == sf::Event::MouseButtonPressed)
-            camera_movement = true;
-       // else if( ev.type == sf::Event::MouseButtonReleased)
-         //   camera_movement = false;
-        else if( ev.type == sf::Event::MouseMoved)
+        sf::Event ev;
+        while (win.pollEvent(ev))
         {
-            sf::Vector2f mouse_pos(ev.mouseMove.x, ev.mouseMove.y);
-            sf::Vector2f d(mouse_pos - mouse_prev_pos);
-
-            if(camera_movement)
+            if(ev.type == sf::Event::Closed)
+                win.close();
+            if(ev.type == sf::Event::KeyPressed && ev.key.code == sf::Keyboard::Escape)
+                win.close();
+            else if( ev.type == sf::Event::MouseButtonPressed)
             {
-                horizontal_angle += (d.x/200);
-                vertical_angle += (d.y/200);
+                if(ev.mouseButton.button == sf::Mouse::Left)
+                    camera_movement = true;
+                else
+                    model_movement = true;
             }
+            else if( ev.type == sf::Event::MouseButtonReleased)
+            {
+                if(ev.mouseButton.button == sf::Mouse::Left)
+                    camera_movement = false;
+                else
+                    model_movement = false;
+            }
+            else if( ev.type == sf::Event::MouseMoved)
+            {
+                sf::Vector2f mouse_pos(ev.mouseMove.x, ev.mouseMove.y);
+                sf::Vector2f d(mouse_pos - mouse_prev_pos);
 
-            mouse_prev_pos = mouse_pos;
+                if(camera_movement)
+                {
+                    camera.rotate(d.y/200, d.x/200);
+                }
+                if(model_movement)
+                {
+//                    model_horizontal_angle += (d.x/200);
+//                    model_vertical_angle += (d.y/200);
+//                    std::cout<<"model: "<< model_horizontal_angle<<" "<<model_vertical_angle<<std::endl;
+                }
+
+                mouse_prev_pos = mouse_pos;
+            }
         }
-    }
 
-    const glm::vec4 right(
-                glm::sin(horizontal_angle - glm::radians(90.0f)),
-                0.0f,
-                glm::cos(horizontal_angle - glm::radians(90.0f)),
-                1.0f);
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+            camera.moveAlongDirection(glm::vec3(0.1f,0.0f,0.0f));
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+            camera.moveAlongDirection(glm::vec3(-0.1f,0.0f,0.0f));
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+            camera.moveAlongDirection(glm::vec3(0.0f,-0.1f,0.0f));
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+            camera.moveAlongDirection(glm::vec3(0.0f,0.1f,0.0f));
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+            camera.moveAlongDirection(glm::vec3(0.0f,0.0f,0.1f));
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+            camera.moveAlongDirection(glm::vec3(0.0f,0.0f,-0.1f));
 
-    const glm::vec4 up(glm::cross(glm::vec3(right.x, right.y, right.z),
-                                         glm::vec3(camera_direction.x, camera_direction.y,  camera_direction.z)), 1.0f);
-
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-        camera_pos +=  camera_direction/10.0f;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-        camera_pos -=  camera_direction /10.0f;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-        camera_pos -=  (right/10.0f);
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-        camera_pos +=  (right/10.0f);
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-        camera_pos +=  (up/10.0f);
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
-        camera_pos -=  (up/10.0f);
 }
 
 void Program::update()
 {
-
+    herubin.rotate(0.01f,0.01f);
 }
 
 void Program::render()
 {
-    graphic.draw();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    gl_manager.render_skybox();
+    gl_manager.reder_obj(obj);
+    gl_manager.reder_obj(herubin);
     win.display();
 }
