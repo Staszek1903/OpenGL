@@ -39,6 +39,9 @@ bool agl::ShadingProgram::link()
 
         return false;
     }
+
+    std::cout<<"SHADER ID: " << getID()<<std::endl;
+
     return true;
 }
 
@@ -57,23 +60,53 @@ bool agl::ShadingProgram::setUniformEnum(const std::string name, GLuint _enum)
 GLuint agl::ShadingProgram::getUniformID(GLuint _enum)
 {
     if(uniforms.find(_enum) == uniforms.end())
-    {std::cout << "BAD UNIFORM"<<std::endl; return -1;}
+    {std::cout << "BAD UNIFORM "<< _enum <<std::endl; return -1;}
 
     return uniforms[_enum];
 }
 
-//void agl::ShadingProgram::getUniforms()
-//{
-//    mvp_matrixID = glGetUniformLocation(shading_programID, "MVP");
-//    ModelMatrixID = glGetUniformLocation(shading_programID, "M");
-//    ModelRotationID = glGetUniformLocation(shading_programID, "M_rot");
-//    lightID = glGetUniformLocation(shading_programID, "LightPos");
-//    camera_posID = glGetUniformLocation(shading_programID, "CameraPos");
-//    texture_samplerID = glGetUniformLocation(shading_programID, "myTextureSampler");
-//}
+void agl::ShadingProgram::setUniform(GLuint _enum, glm::vec3 v)
+{
+    //std::cout<<"uniform 3f"<<std::endl;
+    glUniform3fv(getUniformID(_enum), 1, &v[0]);
+}
+
+void agl::ShadingProgram::setUniform(GLuint _enum, glm::vec2 v)
+{
+    //std::cout<<"uniform 2f"<<std::endl;
+    glUniform2fv(getUniformID(_enum), 1, &v[0]);
+}
+
+void agl::ShadingProgram::setUniform(GLuint _enum, glm::mat4 v)
+{
+    //std::cout<<"uniform mat4f"<<std::endl;
+    glUniformMatrix4fv(getUniformID(_enum), 1, GL_FALSE, &v[0][0]);
+}
+
+void agl::ShadingProgram::setUniform(GLuint _enum, int v)
+{
+    glUniform1i(getUniformID(_enum), v);
+}
+
+void agl::ShadingProgram::render(agl::Model &model)
+{
+    model.bind();
+
+    glDrawElements(
+        GL_TRIANGLES,      // mode
+        model.get_size(),    // count
+        GL_UNSIGNED_SHORT,   // type
+        (void*)0           // element array buffer offset
+    );
+}
 
 GLuint agl::ShadingProgram::getID()
 {
     return shading_programID;
+}
+
+void agl::ShadingProgram::use()
+{
+    glUseProgram(shading_programID);
 }
 

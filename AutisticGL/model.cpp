@@ -1,90 +1,162 @@
 #include "model.h"
 
 agl::Model::Model()
+    :VAO(0), created(false)
 {
-
+    std::cout<<"model init"<<std::endl;
 }
 
 agl::Model::~Model()
 {
-    glDeleteBuffers(1, &vertex_bufferID);
-    glDeleteBuffers(1, &uv_bufferID);
-    glDeleteBuffers(1, &normal_bufferID);
-    glDeleteBuffers(1, &elements_bufferID);
-    glDeleteVertexArrays(1, &vertex_arrayID);
+    release();
 }
 
-bool agl::Model::loadFromOBJ(const char *dir)
+void agl::Model::loadFromMemory(const void * v, const void * c, GLuint buf_size, const unsigned short * e, GLuint elem_size)
 {
-    //load obj
-    std::vector <glm::vec3> vertex_vector, normal_vector;
-    std::vector <glm::vec2> uv_vector;
-    std::vector <unsigned short> indices;
+    //glGenVertexArrays(1,&VAO);
+
+    glm::vec3 * normals_ptr  = (glm::vec3*)(v);
+    std::vector <glm::vec3> normals;
+    for(int i=0; i<buf_size/sizeof(glm::vec3); ++i)
+    {
+        normals.push_back(normals_ptr[i]);
+        glm::vec3 & n = normals[normals.size()-1];
+        n /= (sqrt(n.x*n.x + n.y*n.y + n.z*n.z));
+    }
 
 
-    Assimp::Importer import;
-    const aiScene *scene = import.ReadFile(dir, aiProcess_Triangulate | aiProcess_FlipUVs|aiProcess_CalcTangentSpace       |
-                                                                 aiProcess_JoinIdenticalVertices  |
-                                           aiProcess_SortByPType);
+    create();
+
+    agl::Buffer v_buf = addBuffer(GL_ARRAY_BUFFER,v,buf_size);
+    agl::Buffer c_buf = addBuffer(GL_ARRAY_BUFFER,c,buf_size);
+    agl::Buffer n_buf = addBuffer(GL_ARRAY_BUFFER, &normals[0], normals.size() * sizeof(glm::vec3));
+    addBuffer(GL_ELEMENT_ARRAY_BUFFER,e,elem_size);
+
+    bind();
+
+    v_buf.setAttribPoiter(0,3);
+    c_buf.setAttribPoiter(1,3);
+    n_buf.setAttribPoiter(2,3);
+    bindBuffers();
+
+    size = elem_size / sizeof(unsigned short);
+}
+
+bool agl::Model::loadFromFile(const std::string &dir, bool texture)
+{
+    Assimp::Importer importer;
+
+    const aiScene *scene = importer.ReadFile(dir, aiProcess_Triangulate | aiProcess_FlipUVs|aiProcess_CalcTangentSpace       |
+                                       aiProcess_JoinIdenticalVertices  | aiProcess_GenSmoothNormals |
+                 aiProcess_SortByPType);
 
     if(scene)
         std::cout<<"ZAŁADOWANO MODEL: "<<dir<<std::endl;
     else
     {   std::cout<<"NIEZALADOWANO: "<<dir<<std::endl; return false; }
 
-    aiMesh * mesh = scene->mMeshes[0];
-    for(int i=0; i<mesh->mNumVertices; ++i)
+    if(scene->mNumMeshes == 0)
+    {   std::cout<<"NIE ZAWIRA MESHY: "<<std::endl; return false; }
+
+    std::vector <glm::vec3> vertices, colors, normals;
+    std::vector <glm::vec2> uvs;
+    std::vector <unsigned short> elems;
+
+    aiMesh *mesh = scene->mMeshes[0];
+
+    for(unsigned int i=0; i<mesh->mNumVertices; ++i)
     {
-        aiVector3D v = mesh->mVertices[i];
-        aiVector3D n = mesh->mNormals[i];
-        aiVector3D t = mesh->mTextureCoords[0][i];
-        vertex_vector.push_back(glm::vec3(v.x,v.y,v.z));
-        normal_vector.push_back(glm::vec3(n.x,n.y,n.z));
-        uv_vector.push_back(glm::vec2(t.x,t.y));
+        aiVector3D vertex = mesh->mVertices[i];
+        aiVector3D normal = mesh->mNormals[i];
+        aiVector3D uv = mesh->mTextureCoords[0][i];
+
+        vertices.push_back(glm::vec3(vertex.x, vertex.y, vertex.z));
+        colors.push_back(glm::vec3((vertex.x+1.0f)/2.0f, (vertex.y+1.0f)/2.0f, (vertex.z+1.0f)/2.0f));
+        normals.push_back(glm::vec3(normal.x, normal.y, normal.z));
+        uvs.push_back(glm::vec2(uv.x, uv.y));
     }
 
-    for(int i=0; i<mesh->mNumFaces; ++i)
+    for(unsigned int i=0; i<mesh->mNumFaces; ++i)
     {
         aiFace face = mesh->mFaces[i];
-        for(int j=0; j<face.mNumIndices; ++j)
-            indices.push_back(face.mIndices[j]);
+        elems.push_back(face.mIndices[0]);
+        elems.push_back(face.mIndices[1]);
+        elems.push_back(face.mIndices[2]);
     }
 
-//    char temp;
-//    std::cout<<"WAITING ";
-//    std::cin>>temp;
+    create();
 
-    this->size = indices.size();
-    std::cout<<"obj size: "<<this->size<<std::endl;
+    agl::Buffer v_buf = addBuffer(GL_ARRAY_BUFFER, &vertices[0], vertices.size()*sizeof(glm::vec3));
 
-    //generate vertex array
-    glGenVertexArrays(1, &vertex_arrayID);
-    glBindVertexArray(vertex_arrayID); //ustawia array jako aktywny
+    agl::Buffer c_buf = texture?addBuffer(GL_ARRAY_BUFFER, &uvs[0], uvs.size()*sizeof(glm::vec2))
+                                :addBuffer(GL_ARRAY_BUFFER, &colors[0], colors.size()*sizeof(glm::vec3));
 
-    //generate vertex buffer
-    glGenBuffers(1, &vertex_bufferID);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_bufferID);
-    glBufferData(GL_ARRAY_BUFFER, vertex_vector.size() * sizeof(glm::vec3), &vertex_vector[0], GL_STATIC_DRAW);
+    agl::Buffer n_buf = addBuffer(GL_ARRAY_BUFFER, &normals[0], normals.size()*sizeof(glm::vec3));
+    addBuffer(GL_ELEMENT_ARRAY_BUFFER, &elems[0], elems.size() * sizeof(unsigned short));
 
-    //generate normal buffer
-    glGenBuffers(1, &normal_bufferID);
-    glBindBuffer(GL_ARRAY_BUFFER, normal_bufferID);
-    glBufferData(GL_ARRAY_BUFFER, vertex_vector.size() * sizeof(glm::vec3), &normal_vector[0], GL_STATIC_DRAW);
+    bind();
 
-    //generate texture buffer
-    glGenBuffers(1, &uv_bufferID);
-    glBindBuffer(GL_ARRAY_BUFFER, uv_bufferID);
-    glBufferData(GL_ARRAY_BUFFER, uv_vector.size() * sizeof(glm::vec3), &uv_vector[0], GL_STATIC_DRAW);
+    v_buf.setAttribPoiter(0,3);
+    c_buf.setAttribPoiter(1,texture?2:3);
+    n_buf.setAttribPoiter(2,3);
 
-    //genrate indices buffer;
-    glGenBuffers(1, &elements_bufferID);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_bufferID);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), &indices[0], GL_STATIC_DRAW);
+    bindBuffers();
 
-    std::cout<<"LOADED: "<<dir<<" v_array: "<<vertex_arrayID
-            <<"\nbuffers: "<<vertex_bufferID<<" "
-           <<normal_bufferID<<" "<<uv_bufferID<<" "<<elements_bufferID<<std::endl;
+    size = elems.size();
 
     return true;
+}
 
+void agl::Model::load_cube()
+{
+    loadFromMemory(cube_v, cube_c, sizeof(cube_v), cube_e, sizeof(cube_e));
+}
+
+void agl::Model::load_tetra()
+{
+    loadFromMemory(triangle_v, triangle_c, sizeof(cube_v), triangle_e, sizeof(triangle_e));
+}
+
+void agl::Model::create()
+{
+    if(!created)
+        glGenVertexArrays(1, &VAO);
+}
+
+void agl::Model::release()
+{
+    glDeleteVertexArrays(1,&VAO);
+    for(auto & b: buffers)
+        b.release();
+}
+
+void agl::Model::addBuffer(agl::Buffer b)
+{
+    buffers.push_back(b);
+}
+
+agl::Buffer agl::Model::addBuffer(GLuint type, const void *data, GLuint size)
+{
+    agl::Buffer temp;
+    temp.create(type);
+    temp.loadData(data,size);
+
+    buffers.push_back(temp);
+    return temp;
+}
+
+void agl::Model::bindBuffers()
+{
+    glBindVertexArray(VAO);
+    for(auto & b:buffers)
+        b.bind();
+
+    glBindVertexArray(0);
+    for(auto & b:buffers)
+        b.unbind();
+}
+
+void agl::Model::bind()
+{
+    glBindVertexArray(VAO);
 }

@@ -27,9 +27,9 @@ void agl::Camera::moveAlongDirection(glm::vec3 offset)
                                          glm::vec3(direction.x, direction.y, direction.z)), 1.0f);
 
 
-    position = position + (glm::normalize(direction) * glm::vec3(offset.x, offset.x, offset.x));
-    position = position + (glm::normalize(glm::vec3(right)) * glm::vec3(offset.y, offset.y, offset.y));
-    position = position + glm::vec3(up) * glm::vec3(offset.z, offset.z,offset.z);
+    position = position + (glm::normalize(direction) * offset.y);
+    position = position + (glm::normalize(glm::vec3(right)) * offset.x);
+    position = position + (glm::normalize(glm::vec3(up)) * offset.z);
 
 }
 

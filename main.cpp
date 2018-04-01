@@ -4,10 +4,8 @@
 using namespace std;
 
 int main()
-{    
+{
     Program prog;
     prog.run();
     return 0;
 }
-
-//CHECK

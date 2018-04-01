@@ -10,26 +10,26 @@ LIBS += -lassimp
 
 SOURCES += main.cpp \
     program.cpp \
+    AutisticGL/buffer.cpp \
     AutisticGL/camera.cpp \
     AutisticGL/object.cpp \
-    AutisticGL/container.cpp \
-    AutisticGL/glmanager.cpp \
     AutisticGL/model.cpp \
     AutisticGL/shader.cpp \
-    AutisticGL/shadingprogram.cpp \
-    AutisticGL/skybox.cpp
+    AutisticGL/shadingprogram.cpp
 
 HEADERS += \
     program.h \
+    AutisticGL/buffer.h\
     AutisticGL/camera.h \
+    AutisticGL/gl_headers.h\
     AutisticGL/object.h \
-    AutisticGL/container.h \
-    AutisticGL/glmanager.h \
     AutisticGL/model.h \
     AutisticGL/shader.h \
     AutisticGL/shadingprogram.h \
-    AutisticGL/skybox.h
+    AutisticGL/simple_meshes.h
 
 DISTFILES += \
     ../build-opengl2-Desktop-Release/shaders/texture_fragment_shader.frag \
-    ../build-opengl2-Desktop-Release/shaders/texture_vertex_shader.vert
+    ../build-opengl2-Desktop-Release/shaders/texture_vertex_shader.vert \
+    ../../opengl3/build-opengl3-Desktop-Debug/shaders/sky_shader.frag \
+    ../../opengl3/build-opengl3-Desktop-Debug/shaders/sky_shader.vert

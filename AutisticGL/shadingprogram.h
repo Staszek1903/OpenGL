@@ -6,8 +6,10 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <glm/glm.hpp>
 
 #include "AutisticGL/shader.h"
+#include "AutisticGL/model.h"
 
 namespace agl {
 
@@ -21,16 +23,17 @@ namespace agl {
         bool link();
         void detachShaders();
         bool setUniformEnum(const std::string name, GLuint _enum);
-        //void getUniforms();
         GLuint getUniformID(GLuint _enum);
-        GLuint getID();
 
-        GLuint mvp_matrixID,
-            texture_samplerID,
-            lightID,
-            ModelMatrixID,
-            ModelRotationID,
-            camera_posID;
+        void setUniform(GLuint _enum, glm::vec3 v);
+        void setUniform(GLuint _enum, glm::vec2 v);
+        void setUniform(GLuint _enum, glm::mat4 v);
+        void setUniform(GLuint _enum, int v);
+
+        void render(Model &model);
+
+        GLuint getID();
+        void use();
 
     protected:
         std::vector<GLuint> attached_shaders;

@@ -53,7 +53,7 @@ bool agl::Shader::load(const char *dir, GLuint shader_type)
         return false;
     }
 
-    std::cout<<"zaladowano shader: "<<dir<<std::endl;
+    std::cout<<"zaladowano shader: "<<dir<<" ID: "<<getID()<<std::endl;
 
     return true;
 }

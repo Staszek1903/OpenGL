@@ -1,64 +1,29 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#include <SFML/Graphics.hpp>
-
-#include "model.h"
-#include "shadingprogram.h"
-
-#include <SFML/Graphics.hpp>
-#include <GL/gl.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
+#include "AutisticGL/gl_headers.h"
+#include "AutisticGL/shadingprogram.h"
+#include "AutisticGL/model.h"
 
 namespace agl {
 
-    enum Uniforms
-    {
-        MVP,
-        MODEL_MATRIX,
-        MODEL_ROTATION,
-        TEX_SAMPLER,
-        LIGHT_POS,
-        CAMERA_POS,
-        UIFORMS_COUT
-    };
-
-
     class Object
     {
+        glm::mat4 model_matrix, rotate_matrix;
+        agl::ShadingProgram * program;
+        agl::Model * model;
     public:
         Object();
-        void setModel(agl::Model & model);
-        void setShader(agl::ShadingProgram & shader);
-        void setTexture(sf::Texture & tex);
-
         void move(glm::vec3 offset);
-        void rotate(float v, float h);
-        void setScale(float s);
+        void rotate(GLfloat angle, glm::vec3 vector);
+        glm::mat4 getMatrix() {return model_matrix;}
+        glm::mat4 getRotationMatrix() {return rotate_matrix;}
 
-        glm::mat4 getMatrix();
-        glm::mat4 getRotationMatrix();
-
-        void printBufferID();
-
-        ShadingProgram * shader_ptr;
-        sf::Texture * texture_ptr;
-
-        GLuint vertex_arrayID;
-        GLuint vertex_bufferID;
-        GLuint normal_bufferID;
-        GLuint uv_bufferID;
-        GLuint elements_bufferID;
-        GLuint shading_programID;
-
-        GLuint vertex_num;
-    protected:
-        glm::vec3 position;
-        float scale;
-        float vertical_angle, horizontal_angle;
+        void set_shader(ShadingProgram &shader);
+        void set_model(Model &model);
+        void render(glm::mat4 view, glm::mat4 projection);
     };
+
 }
 
 #endif // OBJECT_H

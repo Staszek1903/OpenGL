@@ -16,6 +16,7 @@ namespace agl {
         bool load(const char *dir, GLuint shader_type);
         GLuint getID();
 
+
     protected:
         GLuint shaderID;
     };
