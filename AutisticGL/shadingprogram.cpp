@@ -10,6 +10,15 @@ agl::ShadingProgram::~ShadingProgram()
     glDeleteProgram(shading_programID);
 }
 
+agl::ShadingProgram::ShadingProgram(agl::ShadingProgram &&other)
+{
+    shading_programID = other.shading_programID;
+    other.shading_programID = 0;
+    uniforms = other.uniforms;
+    attached_shaders = other.attached_shaders;
+    other.attached_shaders.clear();
+}
+
 void agl::ShadingProgram::createProgram()
 {
     shading_programID = glCreateProgram();
@@ -49,6 +58,8 @@ void agl::ShadingProgram::detachShaders()
 {
     for(auto shader : attached_shaders)
         glDetachShader(shading_programID,shader);
+
+    attached_shaders.clear();
 }
 
 bool agl::ShadingProgram::setUniformEnum(const std::string name, GLuint _enum)

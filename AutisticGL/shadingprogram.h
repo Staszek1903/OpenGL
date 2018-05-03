@@ -18,6 +18,11 @@ namespace agl {
     public:
         ShadingProgram();
         ~ShadingProgram();
+        ShadingProgram(const ShadingProgram&) = delete;
+        ShadingProgram & operator =(const ShadingProgram &) = delete;
+        ShadingProgram(ShadingProgram &&other);
+
+
         void createProgram();
         void attachShader(agl::Shader & shader);
         bool link();

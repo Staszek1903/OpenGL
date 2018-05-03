@@ -8,7 +8,31 @@ agl::Model::Model()
 
 agl::Model::~Model()
 {
-    release();
+    if(created)
+        release();
+}
+
+agl::Model &agl::Model::operator =(agl::Model &&other)
+{
+    VAO = other.VAO;
+    other.VAO = 0;
+    created = true;
+    other.created = false;
+    buffers = other.buffers;
+    size = other.size;
+
+    return *this;
+}
+
+agl::Model::Model( Model &&other)
+{
+    VAO = other.VAO;
+    other.VAO = 0;
+    created = true;
+    other.created = false;
+    buffers = other.buffers;
+    size = other.size;
+    textured = other.textured;
 }
 
 void agl::Model::loadFromMemory(const void * v, const void * c, GLuint buf_size, const unsigned short * e, GLuint elem_size)
@@ -17,7 +41,7 @@ void agl::Model::loadFromMemory(const void * v, const void * c, GLuint buf_size,
 
     glm::vec3 * normals_ptr  = (glm::vec3*)(v);
     std::vector <glm::vec3> normals;
-    for(int i=0; i<buf_size/sizeof(glm::vec3); ++i)
+    for(GLuint i=0; i<buf_size/sizeof(glm::vec3); ++i)
     {
         normals.push_back(normals_ptr[i]);
         glm::vec3 & n = normals[normals.size()-1];
@@ -45,6 +69,7 @@ void agl::Model::loadFromMemory(const void * v, const void * c, GLuint buf_size,
 bool agl::Model::loadFromFile(const std::string &dir, bool texture)
 {
     Assimp::Importer importer;
+    this->textured = texture;
 
     const aiScene *scene = importer.ReadFile(dir, aiProcess_Triangulate | aiProcess_FlipUVs|aiProcess_CalcTangentSpace       |
                                        aiProcess_JoinIdenticalVertices  | aiProcess_GenSmoothNormals |

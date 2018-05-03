@@ -20,9 +20,16 @@ namespace agl
 
         GLuint size;
 
+        bool textured;
+
     public:
         Model();
         ~Model();
+        Model( const Model &) = delete;
+        Model & operator +(const Model & ) = delete;
+        Model(Model && other);
+        Model & operator =(Model && other);
+
         void loadFromMemory(const void *v, const void *c, GLuint buf_size, const unsigned short *e, GLuint elem_size);
         bool loadFromFile(const std::string & dir, bool texture);
         void load_cube();
@@ -36,6 +43,8 @@ namespace agl
 
         GLuint get_size(){return size;}
         GLuint get_vao(){return VAO;}
+        bool is_textured(){return textured;}
+
         void bind();
     };
 }
