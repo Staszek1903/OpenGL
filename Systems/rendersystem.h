@@ -3,11 +3,12 @@
 
 #include <entityx/entityx.h>
 #include <SFML/Graphics.hpp>
-#include "Components/modelcomp.h"
-#include "Components/shadercomp.h"
-#include "Components/texturecomp.h"
+
+#include <Components/globjectcomp.h>
 #include "Components/position.h"
 #include "Components/rotation.h"
+#include "Components/scale.h"
+
 #include "AutisticGL/object.h"
 #include "AutisticGL/camera.h"
 

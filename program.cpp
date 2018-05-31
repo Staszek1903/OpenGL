@@ -21,13 +21,6 @@ Program::Program()
     //    glEnable              ( GL_DEBUG_OUTPUT );
     //    glDebugMessageCallback( (GLDEBUGPROC) MessageCallback, 0 );
 
-//    projection = glm::perspective(
-//                glm::radians(50.0f),                                    //FOV
-//                800.0f/600.0f,
-//                0.1f,                                                   //near clip
-//                100.0f);
-
-
     game.init();
 }
 
@@ -43,7 +36,12 @@ void Program::run()
     {
         //std::cout<<"RUn";
         input();
-        update();
+
+        time += clock.restart();
+        while(time > sf::seconds(0.01)){
+            update(0.01);
+            time -= sf::seconds(0.01);
+        }
         render();
     }
 }
@@ -74,6 +72,7 @@ void Program::input()
             if(drag)
             {    
 
+
             }
             else if(pan)
             {
@@ -101,7 +100,7 @@ void Program::input()
     }
 }
 
-void Program::update()
+void Program::update(double dt)
 {
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
         camera.moveAlongDirection(glm::vec3(-0.1,0,0));
@@ -111,6 +110,8 @@ void Program::update()
         camera.moveAlongDirection(glm::vec3(0,0.1,0));
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
         camera.moveAlongDirection(glm::vec3(0,-0.1,0));
+
+    game.update(dt);
 }
 
 void Program::render()

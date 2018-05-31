@@ -11,7 +11,7 @@ namespace agl {
 
     class Object
     {
-        glm::mat4 model_matrix, rotate_matrix;
+        glm::mat4 model_matrix, rotate_matrix, position_matrix, scale_matrix;
         agl::ShadingProgram * program;
         agl::Model * model;
         sf::Texture * texture;
@@ -21,6 +21,9 @@ namespace agl {
         void move(glm::vec3 offset);
         void rotate(GLfloat angle, glm::vec3 vector);
         void rotate(glm::vec3 euler);
+        void set_position(glm::vec3 pos);
+        void set_rotation(glm::vec3 euler);
+        void set_scale(glm::vec3 scale);
         glm::mat4 getMatrix() {return model_matrix;}
         glm::mat4 getRotationMatrix() {return rotate_matrix;}
 

@@ -22,6 +22,9 @@ class Program
     glm::vec2 mousePos;
     Game game;
 
+    sf::Clock clock;
+    sf::Time time;
+
 public:
     explicit Program();
     ~Program();
@@ -30,7 +33,7 @@ public:
 
 private:
     void input();
-    void update();
+    void update(double dt);
     void render();
 };
 

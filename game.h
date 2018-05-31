@@ -3,7 +3,13 @@
 
 #include <entityx/entityx.h>
 #include "resourcemanager.h"
+
 #include "Systems/rendersystem.h"
+#include "Systems/spawnsystem.h"
+#include "Systems/movementsystem.h"
+
+#include "Events/spawnevent.h"
+
 #include "AutisticGL/camera.h"
 
 class Game : public entityx::EntityX
@@ -13,7 +19,7 @@ class Game : public entityx::EntityX
 public:
     Game(agl::Camera & camera);
     void init();
-    void update();
+    void update(double dt);
     void render();
 
 private:

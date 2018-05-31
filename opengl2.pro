@@ -21,7 +21,14 @@ SOURCES += main.cpp \
     resourcemanager.cpp \
     AutisticGL/functions.cpp \
     game.cpp \
-    Systems/rendersystem.cpp
+    Systems/rendersystem.cpp \
+    Systems/spawnsystem.cpp \
+    Events/spawnevent.cpp \
+    Components/globjectcomp.cpp \
+    Components/angularvelcomp.cpp \
+    Components/velocity.cpp \
+    Systems/movementsystem.cpp \
+    Components/scale.cpp
 
 HEADERS += \
     program.h \
@@ -42,7 +49,14 @@ HEADERS += \
     Components/modelcomp.h \
     Components/shadercomp.h \
     Components/texturecomp.h \
-    Components/rotation.h
+    Components/rotation.h \
+    Systems/spawnsystem.h \
+    Events/spawnevent.h \
+    Components/globjectcomp.h \
+    Components/angularvelcomp.h \
+    Components/velocity.h \
+    Systems/movementsystem.h \
+    Components/scale.h
 
 DISTFILES += \
     ../build-opengl2-Desktop-Release/shaders/texture_fragment_shader.frag \

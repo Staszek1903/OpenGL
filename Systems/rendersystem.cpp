@@ -8,23 +8,22 @@ RenderSystem::RenderSystem(sf::RenderWindow &win, agl::Camera &camera, glm::mat4
 
 void RenderSystem::update(entityx::EntityManager &entities, entityx::EventManager &events, double dt)
 {
-    ModelComp::Handle m;
-    TextureComp::Handle t;
-    ShaderComp::Handle s;
+    GLObjectComp::Handle obj;
     Position::Handle p;
     Rotation::Handle r;
+    Scale::Handle scale;
 
-    agl::Object obj;
-
-    for(auto en : entities.entities_with_components(m,t,s,p,r))
+    for(auto en : entities.entities_with_components(obj, p, r))
     {
-        std::cout<<"jest entit"<<std::endl;
-        obj.set_model(m->model);
-        obj.set_shader(s->shader);
-        obj.set_texture(t->texture);
-        obj.move(p->pos);
-        obj.rotate(r->euler_rot);
+        //std::cout<<"jest entit"<<std::endl;
+//        if(en.has_component<Scale>()){
+//            scale = en.component<Scale>();
+//            obj->set_scale(scale->scale);
+//        }
 
-        obj.render(camera.getMatrix(), projection);
+        obj->set_position(p->pos);
+        obj->set_rotation(r->euler_rot);
+
+        obj->render(camera.getMatrix(), projection);
     }
 }

@@ -9,9 +9,13 @@ ResourceManager::ResourceManager()
     contaiter.load_model("./objects/skybox2.obj","skybox_model", true);
     contaiter.load_model("./objects/herub2.obj","herubin_model", true);
     contaiter.load_model("./objects/herubin_smoth.obj","herubin_sm_model", false );
+    //contaiter.load_model("./objects/MinionModel.obj", "minion_model",true);
+    //contaiter.load_model("./objects/AsteroidModel.obj", "asteroid_model",true);
 
     contaiter.load_texture("./textures/herub2_tex.png", "herubin_texture");
     contaiter.load_texture("./textures/canvas5.png", "skybox_texture");
+    //contaiter.load_texture("./textures/MinionTexture.png","minion_texture");
+    //contaiter.load_texture("./textures/AsteroidTexture.png","aseri)
 
     agl::ShadingProgram & program = contaiter.load_shader("./shaders/shader.vert","./shaders/shader.frag","shader");
     program.setUniformEnum("light_vec",0);
